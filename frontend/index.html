@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic Image Search — CNN ResNet-18 Explorer</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+    <div class="background-decor">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <i class="fa-solid fa-brain-circuit logo-icon"></i>
+                <div class="brand-text">
+                    <h1>NeuralSight</h1>
+                    <span>Semantic Image Search Engine</span>
+                </div>
+            </div>
+            <div class="tech-badge">
+                <i class="fa-brands fa-python"></i>
+                <span>PyTorch • ResNet-18</span>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <main class="main-grid">
+            
+            <!-- Left Panel: Search & Query -->
+            <section class="panel search-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-magnifying-glass-nodes"></i> Reverse Image Lookup</h2>
+                    <p>Upload a query image. The CNN extracts its 512-dimensional embedding and matches it using Cosine Similarity.</p>
+                </div>
+                
+                <!-- Upload Dropzone -->
+                <div class="dropzone" id="search-dropzone">
+                    <input type="file" id="search-file-input" accept="image/*" class="file-input">
+                    <div class="dropzone-content" id="search-dropzone-prompt">
+                        <div class="icon-stack">
+                            <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                            <i class="fa-regular fa-image image-icon-sub"></i>
+                        </div>
+                        <h3>Drag & drop your query image</h3>
+                        <p>Supports PNG, JPG, WebP, BMP</p>
+                        <button class="btn btn-secondary">Browse File</button>
+                    </div>
+                    
+                    <div class="dropzone-preview hidden" id="search-preview-container">
+                        <img id="search-preview-image" src="" alt="Query Preview">
+                        <div class="preview-overlay">
+                            <button class="btn btn-danger btn-circle" id="clear-search-btn" title="Remove image">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Webcam Capture Feature -->
+                <div class="webcam-section">
+                    <button class="btn btn-accent w-full" id="webcam-toggle-btn">
+                        <i class="fa-solid fa-camera"></i> Search with Webcam
+                    </button>
+                    <div class="webcam-container hidden" id="webcam-container">
+                        <video id="webcam-video" autoplay playsinline></video>
+                        <canvas id="webcam-canvas" class="hidden"></canvas>
+                        <div class="webcam-controls">
+                            <button class="btn btn-primary" id="webcam-capture-btn">
+                                <i class="fa-solid fa-circle-dot"></i> Capture & Search
+                            </button>
+                            <button class="btn btn-secondary" id="webcam-close-btn">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results -->
+            <section class="panel results-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-bolt"></i> Semantic Matches</h2>
+                    <p id="results-count">Results will appear here once search completes.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state hidden" id="search-loading">
+                    <div class="neural-loader">
+                        <div class="loader-node node-1"></div>
+                        <div class="loader-node node-2"></div>
+                        <div class="loader-node node-3"></div>
+                        <div class="loader-line line-1"></div>
+                        <div class="loader-line line-2"></div>
+                    </div>
+                    <p>CNN is extracting 512-dim embedding vector...</p>
+                </div>
+
+                <!-- Results Grid -->
+                <div class="results-grid" id="results-grid">
+                    <!-- Placeholder cards -->
+                    <div class="placeholder-card">
+                        <div class="placeholder-icon"><i class="fa-regular fa-image"></i></div>
+                        <p>Awaiting query image</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Section: Gallery Database Manager -->
+        <section class="panel gallery-panel">
+            <div class="gallery-header">
+                <div>
+                    <h2><i class="fa-solid fa-images"></i> Image Database Gallery</h2>
+                    <p>Click any image below to use it as a query instantly. Delete or add images to update the searchable database.</p>
+                </div>
+                <!-- Gallery Upload Button -->
+                <div class="gallery-upload-wrapper">
+                    <input type="file" id="gallery-file-input" accept="image/*" class="hidden" multiple>
+                    <button class="btn btn-primary" id="gallery-upload-btn">
+                        <i class="fa-solid fa-plus"></i> Add to Database
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gallery Load State -->
+            <div class="loading-state hidden" id="gallery-loading">
+                <div class="spinner"></div>
+                <p>Loading database...</p>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="gallery-grid" id="gallery-grid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Built with PyTorch ResNet-18 (CNN Feature Extraction) & FastAPI Backend. Features are extracted from the global average pooling layer.</p>
+        </footer>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-circle-info toast-icon"></i>
+        <span id="toast-message">Notification message</span>
+    </div>
+
+    <script src="/frontend/app.js"></script>
+</body>
+</html>
