@@ -10,6 +10,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from backend.seed_gallery import seed
 
 # Initialize FastAPI app
 app = FastAPI(title="Semantic Image Search Engine API")
@@ -154,6 +155,20 @@ def index_gallery():
 def startup_event():
     # Pre-load model to warm up CPU memory
     get_model()
+    
+    # Auto-seed if the gallery directory has no valid images (essential for ephemeral cloud hosting)
+    valid_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+    gallery_files = [
+        f for f in os.listdir(GALLERY_DIR)
+        if os.path.splitext(f.lower())[1] in valid_extensions
+    ]
+    if not gallery_files:
+        print("Gallery is empty. Downloading seed database...")
+        try:
+            seed()
+        except Exception as e:
+            print(f"Error running seeding script: {e}")
+            
     index_gallery()
 
 # ----------------------------------------------------
